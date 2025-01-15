@@ -48,9 +48,6 @@ abstract class AbstractTransformer
         if ($type === self::TYPE_PRIMARY) {
             return self::TYPE_STRING;
         }
-        if ($type === self::TYPE_OBJECT) {
-            return self::TYPE_STRING;
-        }
         if ($type === self::TYPE_BOOL) {
             return self::TYPE_BOOL;
         }

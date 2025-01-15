@@ -103,11 +103,26 @@ class DoctrineToTypesenseTransformer extends AbstractTransformer
                 }
 
                 return null;
-            case self::TYPE_OBJECT.self::TYPE_STRING:
+            case self::TYPE_OBJECT.self::TYPE_OBJECT:
                 if ($isOptional == true && $value == null) {
                     return null;
                 }
-                return $value->__toString();
+
+                if (is_array($value) || is_object($value)) {
+                    if (!($value instanceof \JsonSerializable) && json_encode($value) === false) {
+                        throw new \InvalidArgumentException(sprintf('Value for %s is not instance of JsonSerializable', $propertyName));
+                    }
+
+                    try {
+                        $value = json_encode($value, JSON_THROW_ON_ERROR);
+                        $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $e) {
+                        throw new \InvalidArgumentException(sprintf('Value for %s is not JSON encodable, it get error: %s', $propertyName, $e->getMessage()));
+                    }
+                    return $value;
+                }
+                return null;
+
             case self::TYPE_COLLECTION.self::TYPE_ARRAY_STRING:
                 return array_values(
                     $value->map(function ($v) use($isOptional) {
